@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recap AI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#f8fafc;font-family:Arial,sans-serif;padding:22px}
+header{font-size:28px;font-weight:bold;color:#a78bfa;margin-bottom:8px}
+p{color:#aab4c8;line-height:1.5}
+.card{background:#151d30;border:1px solid #303c56;border-radius:16px;padding:18px;margin-top:20px}
+label{display:block;margin:16px 0 8px;font-weight:bold}
+input,select,textarea{width:100%;padding:13px;background:#0b1020;color:white;border:1px solid #44516b;border-radius:9px;font-size:16px}
+button{width:100%;padding:15px;border:0;border-radius:10px;background:#8b5cf6;color:white;font-size:16px;font-weight:bold;margin-top:16px}
+button:active{opacity:.8}
+#video{width:100%;margin-top:15px;max-height:280px;display:none}
+#result{white-space:pre-wrap;line-height:1.7}
+.small{font-size:13px;color:#9ca3af}
+</style>
+</head>
+<body>
+<header>🎬 Recap AI</header>
+<p>Your personal movie recap studio</p>
+
+<div class="card">
+<h2>Upload your movie</h2>
+<p>Choose a video from your phone to preview it.</p>
+<label for="movie">Video file</label>
+<input id="movie" type="file" accept="video/*">
+<video id="video" controls playsinline></video>
+
+<label for="length">Recap length</label>
+<select id="length">
+<option value="60">1 minute</option>
+<option value="180" selected>3 minutes</option>
+<option value="300">5 minutes</option>
+</select>
+
+<label for="style">Narration style</label>
+<select id="style">
+<option>Suspenseful</option>
+<option>Funny</option>
+<option>Dramatic</option>
+<option>Documentary</option>
+</select>
+
+<label for="notes">Movie title or story notes</label>
+<textarea id="notes" rows="4" placeholder="Enter the movie title or describe the important events..."></textarea>
+
+<button id="scriptBtn">Create recap outline</button>
+<div id="result"></div>
+</div>
+
+<div class="card">
+<h3>🎙️ Voice-over</h3>
+<p>Write or paste your recap narration here. Your browser may be able to read it aloud.</p>
+<textarea id="voiceText" rows="5" placeholder="Your narration will appear here..."></textarea>
+<button id="speakBtn">Read narration aloud</button>
+<button id="stopBtn" style="background:#374151">Stop voice</button>
+<p class="small">Starter version: voice uses your phone's available speech engine.</p>
+</div>
+
+<p class="small">Your selected video is previewed locally in this page. This starter does not upload movies to a server, automatically analyze scenes, or export a finished recap.</p>
+
+<script>
+const movie=document.getElementById('movie');
+const video=document.getElementById('video');
+let oldUrl;
+movie.addEventListener('change',()=>{
+ if(oldUrl) URL.revokeObjectURL(oldUrl);
+ const file=movie.files[0];
+ if(!file)return;
+ oldUrl=URL.createObjectURL(file);
+ video.src=oldUrl;
+ video.style.display='block';
+});
+document.getElementById('scriptBtn').onclick=()=>{
+ const notes=document.getElementById('notes').value.trim();
+ const length=document.getElementById('length').value;
+ const style=document.getElementById('style').value;
+ const result=document.getElementById('result');
+ if(!notes){
+ result.textContent='Enter a movie title or story notes first. This starter cannot analyze the video automatically yet.';
+ return;
+ }
+ const outline='RECAP OUTLINE\\n\\nStyle: '+style+'\\nTarget length: '+length+' seconds\\n\\n1. HOOK (first 5–10 seconds)\\nIntroduce the most intriguing mystery or conflict.\\n\\n2. SETUP\\nIntroduce the main character and their situation.\\n\\n3. KEY EVENTS\\nExplain the important events in chronological order.\\n\\n4. TURNING POINT\\nExplain the biggest change or revelation.\\n\\n5. ENDING\\nSummarize the conclusion and its meaning.\\n\\nStory notes: '+notes+'\\n\\nThis is a template, not an AI-generated recap. Expand each section using your own notes.';
+ result.textContent=outline;
+ document.getElementById('voiceText').value=outline;
+};
+document.getElementById('speakBtn').onclick=()=>{
+ if(!('speechSynthesis' in window)){
+ alert('Speech is not supported in this browser.');
+ return;
+ }
+ speechSynthesis.cancel();
+ const text=document.getElementById('voiceText').value.trim();
+ if(!text){alert('Enter narration first.');return;}
+ const utterance=new SpeechSynthesisUtterance(text);
+ utterance.rate=1;
+ speechSynthesis.speak(utterance);
+};
+document.getElementById('stopBtn').onclick=()=>{
+ if('speechSynthesis' in window)speechSynthesis.cancel();
+};
+</script>
+</body>
+</html>
